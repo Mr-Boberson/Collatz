@@ -3,16 +3,16 @@ from bitarray.util import ba2int
 
 class CollatzMember():
     __value = None
-    __bit_array = None
+    __bit_array = bitarray('')
     __one_child = None
     __zero_child = None
     __parent = None
     __distance = 0
     __D = decodetree({'0': bitarray('0'), '1': bitarray('1')})
 
-    def __init__(self, value, distance = 0, bit_array = bitarray(''), one_child = None, zero_child = None, parent = None) -> None:
+    def __init__(self, value, distance = 0, bit_array = '', one_child = None, zero_child = None, parent = None) -> None:
         self.__value = value
-        self.__bit_array = bit_array
+        self.__bit_array = bitarray(bit_array)
         self.__one_child = one_child
         self.__zero_child = zero_child
         self.__parent = parent
@@ -130,13 +130,13 @@ class CollatzGenerator():
         o_possible = (parent.value - 1) / 3
         if z_possible not in self.__values:
             self.__values.add(z_possible)
-            zero_mem = CollatzMember(z_possible, parent.distance + 1,  '0'.join(parent.bit_array), parent=parent)
+            zero_mem = CollatzMember(z_possible, parent.distance + 1,  '0' + ''.join(parent.bit_array), parent=parent)
             parent.zero_child = zero_mem
             print(zero_mem)
             self.__add_children(zero_mem)
         if o_possible not in self.__values and o_possible % 2 == 1:
             self.__values.add(o_possible)
-            one_mem = CollatzMember(o_possible, parent.distance + 1, '1'.join(parent.bit_array), parent=parent)
+            one_mem = CollatzMember(o_possible, parent.distance + 1, '1' + ''.join(parent.bit_array), parent=parent)
             parent.one_child = one_mem
             print(one_mem)
             self.__add_children(one_mem)

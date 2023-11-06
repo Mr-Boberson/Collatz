@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import operator
 from collatz_generator import CollatzGenerator
 
-gen = CollatzGenerator(10)
+gen = CollatzGenerator(7)
 gen.generate()
 
 # d = decodetree({'0': bitarray('0'), '1': bitarray('1')})
@@ -42,7 +42,7 @@ gen.generate()
 
 # sorted_list = sorted(final_list, key=operator.itemgetter(1))
 
-# with open('c:\\Users\\conno\\OneDrive\\Desktop\\collatz.txt', 'w') as f:
+# with open(, 'w') as f:
 #     f.write("value\t\tcode\n")
 #     for item in sorted_list:
 #         if len(bitarray(item[1])) > 0:
