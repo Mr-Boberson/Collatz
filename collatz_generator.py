@@ -189,3 +189,29 @@ class CollatzGenerator():
         plt.ylabel('value') 
         plt.title('Line graph of the reversed Collatz Conjecture')
         plt.show() 
+
+    def __create_2d_line_lists(self, node):
+        ret_list = [] # [([],[])] stores tuples of sublists
+        if node.one_child is not None:
+            ret_list.extend(self.__create_2d_line_lists(node.one_child))
+        if node.zero_child is not None:
+            ret_list.extend(self.__create_2d_line_lists(node.zero_child))
+        if node.parent == None:
+            return ret_list
+        
+        ret_tuple = ([node.parent.distance, node.distance], [node.parent.value, node.value], [node.parent.get_bit_array_as_int(), node.get_bit_array_as_int()])
+        ret_list.append(ret_tuple)
+        return ret_list
+    
+    def create_3d_line_graph(self):
+        graph_data = self.__create_2d_line_lists(self.__first_member)
+        graph = plt.axes(projection ='3d')
+        n = len(graph_data)
+        for i, (x, y, z) in enumerate(graph_data):
+            graph.plot3D(x, y, z, "black")
+
+        graph.set_xlabel('x - Distance from 1', fontweight ='bold') 
+        graph.set_ylabel('y - Decimal value', fontweight ='bold') 
+        graph.set_zlabel('z - Integer value of Collatz code', fontweight ='bold')
+        plt.title('3d Line graph of the reversed Collatz Conjecture')
+        plt.show() 
