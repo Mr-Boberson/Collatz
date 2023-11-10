@@ -1,5 +1,6 @@
 from bitarray import bitarray, decodetree
 from bitarray.util import ba2int
+import matplotlib.pyplot as plt 
 
 class CollatzMember():
     __value = None
@@ -21,7 +22,7 @@ class CollatzMember():
     #--Getters and setters for __value
     @property
     def value(self):
-        return self.__value
+        return int(self.__value)
     
     @value.setter
     def value(self, value):
@@ -46,7 +47,9 @@ class CollatzMember():
         return ''.join(bitarray(self.__bit_array).decode(CollatzMember.__D))
     
     def get_bit_array_as_int(self):
-        return ba2int(self.__bit_array)
+        if self.__bit_array != bitarray(""):
+            return int(ba2int(self.__bit_array))
+        return None
     
     def get_bit_array_as_bitarray(self):
         return self.__bit_array
@@ -105,18 +108,27 @@ class CollatzMember():
     def __repr__(self) -> str:
         return(f"CollatzMember({self.__value}, {self.__bit_array}, {self.__one_child}, {self.__zero_child}, {self.__parent})")
     
+    def __hash__(self):
+        return hash(self.value)
+    
+    def __eq__(self, other):
+        if other != None:
+            return self.value == other.value
+        return self.value == None
+    
 
 class CollatzGenerator():
-    __values = {1}
-    __distance = 0
-    __allow_repeats = False
-    __shortcut = False
     __first_member = CollatzMember(1)
+    __values = {1}
+    __objects = [CollatzMember(1)]
+    __distance = 0
+    __shortcut = False
+    __filename = 'collatz.txt'
 
-    def __init__(self, distance, shortcut = False, allow_repeats = False) -> None:
+    def __init__(self, distance, shortcut = False, filename = 'collatz.txt') -> None:
         self.__distance = distance
-        self.__allow_repeats = allow_repeats
         self.__shortcut = shortcut
+        self.__filename = filename
 
     def generate(self):
         print(self.__first_member)
@@ -132,11 +144,48 @@ class CollatzGenerator():
             self.__values.add(z_possible)
             zero_mem = CollatzMember(z_possible, parent.distance + 1,  '0' + ''.join(parent.bit_array), parent=parent)
             parent.zero_child = zero_mem
+            self.__objects.append(zero_mem)
             print(zero_mem)
             self.__add_children(zero_mem)
         if o_possible not in self.__values and o_possible % 2 == 1:
+            if self.__shortcut:
+                o_possible *= 2
             self.__values.add(o_possible)
             one_mem = CollatzMember(o_possible, parent.distance + 1, '1' + ''.join(parent.bit_array), parent=parent)
             parent.one_child = one_mem
+            self.__objects.append(one_mem)
             print(one_mem)
             self.__add_children(one_mem)
+
+    def write_to_file(self, sort_by = "value"):
+        if sort_by == "bitarray":
+           self.__objects.sort(key=lambda x: x.bit_array)
+        else:
+            self.__objects.sort(key=lambda x: x.value)
+
+        with open(self.__filename, 'w+') as f:
+            f.write("value\t\tcode_as_int\t\tcode\n")
+            for item in self.__objects:
+                f.write(f'{item.value}\t\t{item.get_bit_array_as_int()}\t\t{item.bit_array}\n')
+
+    def __create_2d_line_lists(self, node):
+        ret_list = [] # [([],[])] stores tuples of sublists
+        if node.one_child is not None:
+            ret_list.extend(self.__create_2d_line_lists(node.one_child))
+        if node.zero_child is not None:
+            ret_list.extend(self.__create_2d_line_lists(node.zero_child))
+        if node.parent == None:
+            return ret_list
+        
+        ret_tuple = ([node.parent.distance, node.distance], [node.parent.value, node.value])
+        ret_list.append(ret_tuple)
+        return ret_list
+
+    def create_2d_line_graph(self):
+        graph_data = self.__create_2d_line_lists(self.__first_member)
+        for i, (x, y) in enumerate(graph_data):
+            plt.plot(x, y, color='black', label = f'Label {i}', marker='o')
+        plt.xlabel('Distance from 1') 
+        plt.ylabel('value') 
+        plt.title('Line graph of the reversed Collatz Conjecture')
+        plt.show() 
