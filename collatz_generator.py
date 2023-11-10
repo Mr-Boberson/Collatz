@@ -118,17 +118,15 @@ class CollatzMember():
     
 
 class CollatzGenerator():
-    __first_member = CollatzMember(1)
-    __values = {1}
-    __objects = [CollatzMember(1)]
-    __distance = 0
-    __shortcut = False
-    __filename = 'collatz.txt'
 
-    def __init__(self, distance, shortcut = False, filename = 'collatz.txt') -> None:
+    def __init__(self, distance = 0, shortcut = False, filename = 'collatz.txt') -> None:
         self.__distance = distance
         self.__shortcut = shortcut
         self.__filename = filename
+        self.__first_member = CollatzMember(1)
+        self.__values = {1}
+        self.__objects = [CollatzMember(1)]
+        self.__distance = distance
 
     def generate(self):
         print(self.__first_member)
