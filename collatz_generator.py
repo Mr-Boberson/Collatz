@@ -1,8 +1,30 @@
+"""The file containing the CollatzMember and CollatzGenerator classes"""
+__author__ = "Mr-Boberson"
+__license__ = "GPL"
+__version__ = "1.0.0"
+__maintainer__ = "Mr-Boberson"
+
 from bitarray import bitarray, decodetree
 from bitarray.util import ba2int
 import matplotlib.pyplot as plt 
 
 class CollatzMember():
+    """Represents an individual member of the Collatz sequence.
+
+    Attributes:
+        value (int): The numerical value of the Collatz member.
+        distance (int): The distance of the member from the starting point (1).
+        bit_array (bitarray): The bit array representation of the member.
+        one_child (CollatzMember): The Collatz member obtained by multiplying the current value by 2.
+        zero_child (CollatzMember): The Collatz member obtained by subtracting 1 and dividing by 3 and possibly multiplying by 2(if possible).
+        parent (CollatzMember): The parent Collatz member from which the current member is derived.
+
+    Methods:
+        __str__(): Returns a human-readable string representation of the Collatz member.
+        __repr__(): Returns a string representation suitable for reproduction of the object.
+        __hash__(): Returns the hash value of the Collatz member based on its value.
+        __eq__(other): Checks if two Collatz members are equal based on their values.
+    """
     __value = None
     __bit_array = bitarray('')
     __one_child = None
@@ -112,12 +134,47 @@ class CollatzMember():
         return hash(self.value)
     
     def __eq__(self, other):
+        # Used for sorting CollatzMembers
         if other != None:
             return self.value == other.value
         return self.value == None
     
 
 class CollatzGenerator():
+    """Generates and analyzes the Collatz sequence.
+
+    Attributes:
+        distance (int): The maximum distance from the starting point (1) to generate the sequence.
+        shortcut (bool): A flag indicating whether to apply a shortcut for odd values.
+        filename (str): The name of the file to write the sequence information.
+        first_member (CollatzMember): The initial member of the Collatz sequence.
+        values (set): A set containing unique values in the generated sequence.
+        objects (list): A list containing all CollatzMember objects generated in the sequence.
+
+    Methods:
+        generate(): Generates the Collatz sequence.
+        write_to_file(sort_by="value"): Writes sequence information to a file, optionally sorting by value or bit array.
+        create_2d_line_graph(): Creates a 2D line graph visualizing the Collatz sequence.
+        create_3d_line_graph(): Creates a 3D line graph visualizing the Collatz sequence.
+
+    Private Methods:
+        __add_children(parent): Recursively adds child members to the Collatz sequence.
+        __create_2d_line_lists(node): Formats data for a 2D line graph.
+        __create_3d_line_lists(node): Formats data for a 3D line graph.
+
+    Typical Use:
+        gen = CollatzGenerator(20, shortcut=True)
+        gen.generate()
+        gen.create_2d_line_graph()
+        gen.create_3d_line_graph()
+        del gen
+
+        gen2 = CollatzGenerator(8, shortcut=False, filename="collatz2.txt")
+        gen2.generate()
+        gen2.write_to_file()
+        gen2.create_2d_line_graph()
+        del gen2
+    """
 
     def __init__(self, distance = 0, shortcut = False, filename = 'collatz.txt') -> None:
         self.__distance = distance
@@ -129,10 +186,16 @@ class CollatzGenerator():
         self.__distance = distance
 
     def generate(self):
+        """Generates the Collatz sequence by printing the first member and adding its children."""
         print(self.__first_member)
         self.__add_children(self.__first_member)
 
     def __add_children(self, parent):
+        """Adds children to the Collatz sequence recursively.
+
+            Args:
+                parent (CollatzMember): The parent member to add children to.
+        """
         if not parent.distance < self.__distance:
             return
         
@@ -156,6 +219,11 @@ class CollatzGenerator():
             self.__add_children(one_mem)
 
     def write_to_file(self, sort_by = "value"):
+        """Writes sequence information to a file, optionally sorting by value or bit array.
+
+            Args:
+                sort_by (str): Sorting criterion, either "value" or "bitarray". Default is "value".
+        """
         if sort_by == "bitarray":
            self.__objects.sort(key=lambda x: x.bit_array)
         else:
@@ -167,6 +235,14 @@ class CollatzGenerator():
                 f.write(f'{item.value}\t\t{item.get_bit_array_as_int()}\t\t{item.bit_array}\n')
 
     def __create_2d_line_lists(self, node):
+        """Creates data for a 2D line graph.
+
+            Args:
+                node (CollatzMember): The current Collatz member.
+
+            Returns:
+                list: A list of tuples representing sublists for the 2D line graph.
+        """
         ret_list = [] # [([],[])] stores tuples of sublists
         if node.one_child is not None:
             ret_list.extend(self.__create_2d_line_lists(node.one_child))
@@ -180,6 +256,7 @@ class CollatzGenerator():
         return ret_list
 
     def create_2d_line_graph(self):
+        """Creates a 2D line graph visualizing the Collatz sequence."""
         graph_data = self.__create_2d_line_lists(self.__first_member)
         for i, (x, y) in enumerate(graph_data):
             plt.plot(x, y, color='black', label = f'Label {i}', marker='o')
@@ -188,12 +265,20 @@ class CollatzGenerator():
         plt.title('Line graph of the reversed Collatz Conjecture')
         plt.show() 
 
-    def __create_2d_line_lists(self, node):
+    def __create_3d_line_lists(self, node):
+        """Creates data for a 3D line graph.
+
+            Args:
+                node (CollatzMember): The current Collatz member.
+
+            Returns:
+                list: A list of tuples representing sublists for the 3D line graph.
+        """
         ret_list = [] # [([],[])] stores tuples of sublists
         if node.one_child is not None:
-            ret_list.extend(self.__create_2d_line_lists(node.one_child))
+            ret_list.extend(self.__create_3d_line_lists(node.one_child))
         if node.zero_child is not None:
-            ret_list.extend(self.__create_2d_line_lists(node.zero_child))
+            ret_list.extend(self.__create_3d_line_lists(node.zero_child))
         if node.parent == None:
             return ret_list
         
@@ -202,7 +287,8 @@ class CollatzGenerator():
         return ret_list
     
     def create_3d_line_graph(self):
-        graph_data = self.__create_2d_line_lists(self.__first_member)
+        """Creates a 3D line graph visualizing the Collatz sequence."""
+        graph_data = self.__create_3d_line_lists(self.__first_member)
         graph = plt.axes(projection ='3d')
         n = len(graph_data)
         for i, (x, y, z) in enumerate(graph_data):
